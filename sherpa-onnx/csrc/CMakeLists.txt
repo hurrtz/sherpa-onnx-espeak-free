@@ -447,7 +447,7 @@ endif()
 
 target_link_libraries(sherpa-onnx-core fstfar fst)
 
-if(SHERPA_ONNX_ENABLE_TTS)
+if(SHERPA_ONNX_ENABLE_TTS AND SHERPA_ONNX_ENABLE_ESPEAK)
   target_link_libraries(sherpa-onnx-core
     piper_phonemize)
 endif()
@@ -819,8 +819,12 @@ if(SHERPA_ONNX_ENABLE_TESTS)
   if(SHERPA_ONNX_ENABLE_TTS)
     list(APPEND sherpa_onnx_test_srcs
       sentence-piece-tokenizer-test.cc
-      piper-phonemize-test.cc
     )
+    if(SHERPA_ONNX_ENABLE_ESPEAK)
+      list(APPEND sherpa_onnx_test_srcs
+        piper-phonemize-test.cc
+      )
+    endif()
   endif()
 
   if(SHERPA_ONNX_ENABLE_SPEAKER_DIARIZATION)
