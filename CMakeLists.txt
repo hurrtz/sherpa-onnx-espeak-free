@@ -556,9 +556,18 @@ if(SHERPA_ONNX_ENABLE_TTS)
     include(piper-phonemize)
   else()
     # espeak-free build: header-only stubs satisfy the piper/espeak API
-    # surface; espeak-backed phonemization yields empty output at runtime.
+    # surface; espeak-backed phonemization yields empty output at runtime,
+    # or routes into libphonemize when SHERPA_ONNX_LIBPHONEMIZE_ROOT points
+    # at an installed libphonemize (include/ + built library).
     message(STATUS "eSpeak NG disabled: using espeak-free stubs")
     include_directories(${PROJECT_SOURCE_DIR}/espeak-free-stubs)
+    if(SHERPA_ONNX_LIBPHONEMIZE_ROOT)
+      message(STATUS "Routing phonemization into libphonemize: ${SHERPA_ONNX_LIBPHONEMIZE_ROOT}")
+      add_definitions(-DSHERPA_ONNX_USE_LIBPHONEMIZE=1)
+      include_directories(${SHERPA_ONNX_LIBPHONEMIZE_ROOT}/include)
+      link_directories(${SHERPA_ONNX_LIBPHONEMIZE_ROOT}/lib)
+      link_libraries(phonemize)
+    endif()
   endif()
 endif()
 

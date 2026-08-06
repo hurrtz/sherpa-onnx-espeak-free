@@ -12,6 +12,17 @@
 #ifndef ESPEAK_FREE_STUB_SPEAK_LIB_H_
 #define ESPEAK_FREE_STUB_SPEAK_LIB_H_
 
+#include <string>
+
+namespace espeak_free {
+// Captured from espeak_Initialize; the libphonemize integration reuses the
+// espeak-ng-data directory as its language-pack location.
+inline std::string& data_dir() {
+  static std::string value;
+  return value;
+}
+}  // namespace espeak_free
+
 typedef enum {
   AUDIO_OUTPUT_PLAYBACK,
   AUDIO_OUTPUT_RETRIEVAL,
@@ -24,8 +35,13 @@ typedef enum {
 // phonemizer stub produce empty output instead.
 inline int espeak_Initialize(espeak_AUDIO_OUTPUT /*output*/,
                              int /*buflength*/,
-                             const char* /*path*/,
+                             const char* path,
                              int /*options*/) {
+  // The application provisions this directory for espeak-ng-data; the
+  // libphonemize integration reuses it as the language-pack location.
+  if (path != nullptr) {
+    espeak_free::data_dir() = path;
+  }
   return 22050;
 }
 
