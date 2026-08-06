@@ -130,10 +130,17 @@ cmake --build build/os64 --target install
 echo "Generate xcframework"
 
 mkdir -p "build/simulator/lib"
+# espeak-free builds do not produce the piper/espeak archives.
+if [ "${SHERPA_ONNX_ENABLE_ESPEAK:-ON}" == "ON" ]; then
+  espeak_libs="libucd.a libpiper_phonemize.a libespeak-ng.a"
+else
+  espeak_libs=""
+fi
+
 for f in libkaldi-native-fbank-core.a libkissfft-float.a libsherpa-onnx-c-api.a libsherpa-onnx-core.a \
          libsherpa-onnx-fstfar.a libssentencepiece_core.a \
          libsherpa-onnx-fst.a libsherpa-onnx-kaldifst-core.a libkaldi-decoder-core.a \
-         libucd.a libpiper_phonemize.a libespeak-ng.a; do
+         $espeak_libs; do
   lipo -create build/simulator_arm64/lib/${f} \
                build/simulator_x86_64/lib/${f} \
        -output build/simulator/lib/${f}
@@ -150,9 +157,7 @@ libtool -static -o build/simulator/libsherpa-onnx.a \
   build/simulator/lib/libsherpa-onnx-fst.a   \
   build/simulator/lib/libsherpa-onnx-kaldifst-core.a \
   build/simulator/lib/libkaldi-decoder-core.a \
-  build/simulator/lib/libucd.a \
-  build/simulator/lib/libpiper_phonemize.a \
-  build/simulator/lib/libespeak-ng.a \
+  $(for f in $espeak_libs; do echo build/simulator/lib/$f; done) \
   build/simulator/lib/libssentencepiece_core.a
 
 libtool -static -o build/os64/libsherpa-onnx.a \
@@ -164,9 +169,7 @@ libtool -static -o build/os64/libsherpa-onnx.a \
   build/os64/lib/libsherpa-onnx-fst.a   \
   build/os64/lib/libsherpa-onnx-kaldifst-core.a \
   build/os64/lib/libkaldi-decoder-core.a \
-  build/os64/lib/libucd.a \
-  build/os64/lib/libpiper_phonemize.a \
-  build/os64/lib/libespeak-ng.a \
+  $(for f in $espeak_libs; do echo build/os64/lib/$f; done) \
   build/os64/lib/libssentencepiece_core.a
 
 rm -rf sherpa-onnx.xcframework

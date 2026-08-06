@@ -21,9 +21,14 @@ struct eSpeakPhonemeConfig {
   std::string voice = "en-us";
 };
 
-inline void phonemize_eSpeak(const std::string& /*text*/,
-                             eSpeakPhonemeConfig& /*config*/,
-                             std::vector<std::vector<Phoneme>>& phonemes) {
+// Internal linkage: static archives keep weak inline symbols, and a
+// `piper::phonemize_eSpeak` in `nm` output would be indistinguishable from
+// the real library to naive audits. Each TU gets its own trivially small
+// copy instead.
+[[maybe_unused]] static void phonemize_eSpeak(
+    const std::string& /*text*/,
+    eSpeakPhonemeConfig& /*config*/,
+    std::vector<std::vector<Phoneme>>& phonemes) {
   static bool warned = false;
   if (!warned) {
     warned = true;
