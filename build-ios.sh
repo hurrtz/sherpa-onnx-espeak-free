@@ -148,7 +148,8 @@ if [ -n "${SHERPA_ONNX_LIBPHONEMIZE_IOS_ROOT:-}" ]; then
   libphonemize_sim="${SHERPA_ONNX_LIBPHONEMIZE_IOS_ROOT}/simulator/install/lib/libphonemize.a"
 fi
 
-for f in libkaldi-native-fbank-core.a libkissfft-float.a libsherpa-onnx-c-api.a libsherpa-onnx-core.a \
+for f in libkaldi-native-fbank-core.a libkissfft-float.a libsherpa-onnx-c-api.a \
+         libsherpa-onnx-cxx-api.a libsherpa-onnx-core.a \
          libsherpa-onnx-fstfar.a libssentencepiece_core.a \
          libsherpa-onnx-fst.a libsherpa-onnx-kaldifst-core.a libkaldi-decoder-core.a \
          $espeak_libs; do
@@ -163,6 +164,7 @@ libtool -static -o build/simulator/libsherpa-onnx.a \
   build/simulator/lib/libkaldi-native-fbank-core.a \
   build/simulator/lib/libkissfft-float.a \
   build/simulator/lib/libsherpa-onnx-c-api.a \
+  build/simulator/lib/libsherpa-onnx-cxx-api.a \
   build/simulator/lib/libsherpa-onnx-core.a  \
   build/simulator/lib/libsherpa-onnx-fstfar.a   \
   build/simulator/lib/libsherpa-onnx-fst.a   \
@@ -170,12 +172,14 @@ libtool -static -o build/simulator/libsherpa-onnx.a \
   build/simulator/lib/libkaldi-decoder-core.a \
   $(for f in $espeak_libs; do echo build/simulator/lib/$f; done) \
   $libphonemize_sim \
+  ios-onnxruntime/onnxruntime.xcframework/ios-arm64_x86_64-simulator/onnxruntime.a \
   build/simulator/lib/libssentencepiece_core.a
 
 libtool -static -o build/os64/libsherpa-onnx.a \
   build/os64/lib/libkaldi-native-fbank-core.a \
   build/os64/lib/libkissfft-float.a \
   build/os64/lib/libsherpa-onnx-c-api.a \
+  build/os64/lib/libsherpa-onnx-cxx-api.a \
   build/os64/lib/libsherpa-onnx-core.a \
   build/os64/lib/libsherpa-onnx-fstfar.a   \
   build/os64/lib/libsherpa-onnx-fst.a   \
@@ -183,6 +187,7 @@ libtool -static -o build/os64/libsherpa-onnx.a \
   build/os64/lib/libkaldi-decoder-core.a \
   $(for f in $espeak_libs; do echo build/os64/lib/$f; done) \
   $libphonemize_os64 \
+  ios-onnxruntime/onnxruntime.xcframework/ios-arm64/onnxruntime.a \
   build/os64/lib/libssentencepiece_core.a
 
 rm -rf sherpa-onnx.xcframework
