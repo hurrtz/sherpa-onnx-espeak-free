@@ -56,6 +56,7 @@ if [[ ! -f build/simulator_x86_64/install/lib/libsherpa-onnx-c-api.dylib ]]; the
     -DBUILD_PIPER_PHONMIZE_TESTS=OFF \
     -DBUILD_ESPEAK_NG_EXE=OFF \
     -DBUILD_ESPEAK_NG_TESTS=OFF \
+  -DSHERPA_ONNX_ENABLE_ESPEAK=${SHERPA_ONNX_ENABLE_ESPEAK:-ON} \
     -S .. -D CMAKE_VERBOSE_MAKEFILE=$CMAKE_VERBOSE_MAKEFILE \
     -DCMAKE_TOOLCHAIN_FILE=./toolchains/ios.toolchain.cmake \
     -DPLATFORM=SIMULATOR64 \
@@ -89,6 +90,7 @@ if [[ ! -f build/simulator_arm64/install/lib/libsherpa-onnx-c-api.dylib ]]; then
     -DBUILD_PIPER_PHONMIZE_TESTS=OFF \
     -DBUILD_ESPEAK_NG_EXE=OFF \
     -DBUILD_ESPEAK_NG_TESTS=OFF \
+  -DSHERPA_ONNX_ENABLE_ESPEAK=${SHERPA_ONNX_ENABLE_ESPEAK:-ON} \
     -S .. -D CMAKE_VERBOSE_MAKEFILE=$CMAKE_VERBOSE_MAKEFILE \
     -DCMAKE_TOOLCHAIN_FILE=./toolchains/ios.toolchain.cmake \
     -DPLATFORM=SIMULATORARM64 \
@@ -124,6 +126,7 @@ if [[ ! -f build/os64/install/lib/libsherpa-onnx-c-api.dylib ]]; then
     -DBUILD_PIPER_PHONMIZE_TESTS=OFF \
     -DBUILD_ESPEAK_NG_EXE=OFF \
     -DBUILD_ESPEAK_NG_TESTS=OFF \
+  -DSHERPA_ONNX_ENABLE_ESPEAK=${SHERPA_ONNX_ENABLE_ESPEAK:-ON} \
     -S .. -D CMAKE_VERBOSE_MAKEFILE=$CMAKE_VERBOSE_MAKEFILE \
     -DCMAKE_TOOLCHAIN_FILE=./toolchains/ios.toolchain.cmake \
     -DPLATFORM=OS64 \
