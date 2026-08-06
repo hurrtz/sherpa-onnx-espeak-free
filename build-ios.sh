@@ -45,6 +45,7 @@ cmake \
   -DBUILD_ESPEAK_NG_EXE=OFF \
   -DBUILD_ESPEAK_NG_TESTS=OFF \
   -DSHERPA_ONNX_ENABLE_ESPEAK=${SHERPA_ONNX_ENABLE_ESPEAK:-ON} \
+  -DSHERPA_ONNX_LIBPHONEMIZE_ROOT=${SHERPA_ONNX_LIBPHONEMIZE_IOS_ROOT:+${SHERPA_ONNX_LIBPHONEMIZE_IOS_ROOT}/simulator/install} \
   -S .. \
   -DCMAKE_TOOLCHAIN_FILE=./toolchains/ios.toolchain.cmake \
   -DPLATFORM=SIMULATOR64 \
@@ -63,7 +64,7 @@ cmake \
   -DDEPLOYMENT_TARGET=13.0 \
   -B build/simulator_x86_64
 
-cmake --build build/simulator_x86_64 -j 4 --verbose
+cmake --build build/simulator_x86_64 -j 4 --target sherpa-onnx-core sherpa-onnx-c-api sherpa-onnx-cxx-api
 
 echo "Building for simulator (arm64)"
 
@@ -73,6 +74,7 @@ cmake \
   -DBUILD_ESPEAK_NG_EXE=OFF \
   -DBUILD_ESPEAK_NG_TESTS=OFF \
   -DSHERPA_ONNX_ENABLE_ESPEAK=${SHERPA_ONNX_ENABLE_ESPEAK:-ON} \
+  -DSHERPA_ONNX_LIBPHONEMIZE_ROOT=${SHERPA_ONNX_LIBPHONEMIZE_IOS_ROOT:+${SHERPA_ONNX_LIBPHONEMIZE_IOS_ROOT}/simulator/install} \
   -S .. \
   -DCMAKE_TOOLCHAIN_FILE=./toolchains/ios.toolchain.cmake \
   -DPLATFORM=SIMULATORARM64 \
@@ -92,7 +94,7 @@ cmake \
   -DDEPLOYMENT_TARGET=13.0 \
   -B build/simulator_arm64
 
-cmake --build build/simulator_arm64 -j 4 --verbose
+cmake --build build/simulator_arm64 -j 4 --target sherpa-onnx-core sherpa-onnx-c-api sherpa-onnx-cxx-api
 
 echo "Building for arm64"
 
@@ -104,6 +106,7 @@ cmake \
   -DBUILD_ESPEAK_NG_EXE=OFF \
   -DBUILD_ESPEAK_NG_TESTS=OFF \
   -DSHERPA_ONNX_ENABLE_ESPEAK=${SHERPA_ONNX_ENABLE_ESPEAK:-ON} \
+  -DSHERPA_ONNX_LIBPHONEMIZE_ROOT=${SHERPA_ONNX_LIBPHONEMIZE_IOS_ROOT:+${SHERPA_ONNX_LIBPHONEMIZE_IOS_ROOT}/os64/install} \
   -S .. \
   -DCMAKE_TOOLCHAIN_FILE=./toolchains/ios.toolchain.cmake \
   -DPLATFORM=OS64 \
@@ -123,7 +126,7 @@ cmake \
   -DDEPLOYMENT_TARGET=13.0 \
   -B build/os64
 
-cmake --build build/os64 -j 4
+cmake --build build/os64 -j 4 --target sherpa-onnx-core sherpa-onnx-c-api sherpa-onnx-cxx-api
 # Generate headers for sherpa-onnx.xcframework
 cmake --build build/os64 --target install
 
@@ -135,6 +138,14 @@ if [ "${SHERPA_ONNX_ENABLE_ESPEAK:-ON}" == "ON" ]; then
   espeak_libs="libucd.a libpiper_phonemize.a libespeak-ng.a"
 else
   espeak_libs=""
+fi
+
+# Routed espeak-free build: merge libphonemize into the final archives.
+libphonemize_os64=""
+libphonemize_sim=""
+if [ -n "${SHERPA_ONNX_LIBPHONEMIZE_IOS_ROOT:-}" ]; then
+  libphonemize_os64="${SHERPA_ONNX_LIBPHONEMIZE_IOS_ROOT}/os64/install/lib/libphonemize.a"
+  libphonemize_sim="${SHERPA_ONNX_LIBPHONEMIZE_IOS_ROOT}/simulator/install/lib/libphonemize.a"
 fi
 
 for f in libkaldi-native-fbank-core.a libkissfft-float.a libsherpa-onnx-c-api.a libsherpa-onnx-core.a \
@@ -158,6 +169,7 @@ libtool -static -o build/simulator/libsherpa-onnx.a \
   build/simulator/lib/libsherpa-onnx-kaldifst-core.a \
   build/simulator/lib/libkaldi-decoder-core.a \
   $(for f in $espeak_libs; do echo build/simulator/lib/$f; done) \
+  $libphonemize_sim \
   build/simulator/lib/libssentencepiece_core.a
 
 libtool -static -o build/os64/libsherpa-onnx.a \
@@ -170,6 +182,7 @@ libtool -static -o build/os64/libsherpa-onnx.a \
   build/os64/lib/libsherpa-onnx-kaldifst-core.a \
   build/os64/lib/libkaldi-decoder-core.a \
   $(for f in $espeak_libs; do echo build/os64/lib/$f; done) \
+  $libphonemize_os64 \
   build/os64/lib/libssentencepiece_core.a
 
 rm -rf sherpa-onnx.xcframework

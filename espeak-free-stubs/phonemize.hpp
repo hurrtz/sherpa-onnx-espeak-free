@@ -66,18 +66,34 @@ struct ContextCache {
   std::mutex mutex;
   std::unordered_map<std::string, phonemize_context*> by_voice;
 
+  static phonemize_context* Create(const std::string& dir,
+                                   const std::string& language,
+                                   phonemize_status* status) {
+    phonemize_config config{};
+    config.data_dir = dir.c_str();
+    config.language = language.c_str();
+    return phonemize_create(&config, status);
+  }
+
   phonemize_context* Get(const std::string& voice) {
     std::lock_guard<std::mutex> lock(mutex);
     auto found = by_voice.find(voice);
     if (found != by_voice.end()) {
       return found->second;
     }
-    phonemize_config config{};
     const std::string dir = espeak_free::data_dir();
-    config.data_dir = dir.c_str();
-    config.language = voice.c_str();
     phonemize_status status = PHONEMIZE_OK;
-    phonemize_context* context = phonemize_create(&config, &status);
+    phonemize_context* context = Create(dir, voice, &status);
+    if (context == nullptr) {
+      // espeak voice ids often carry a region (fr-fr, pt-pt); fall back to
+      // the primary subtag pack, and en to en-us.
+      const size_t dash = voice.find('-');
+      if (dash != std::string::npos) {
+        context = Create(dir, voice.substr(0, dash), &status);
+      } else if (voice == "en") {
+        context = Create(dir, "en-us", &status);
+      }
+    }
     if (context == nullptr) {
       static bool warned = false;
       if (!warned) {
@@ -103,9 +119,13 @@ inline ContextCache& cache() {
 
 }  // namespace detail
 
-inline void phonemize_eSpeak(const std::string& text,
-                             eSpeakPhonemeConfig& config,
-                             std::vector<std::vector<Phoneme>>& phonemes) {
+// Internal linkage, matching the non-routed stub: a weak external
+// `piper::phonemize_eSpeak` in a static archive is indistinguishable from
+// the real GPL library to a binary audit.
+[[maybe_unused]] static void phonemize_eSpeak(
+    const std::string& text,
+    eSpeakPhonemeConfig& config,
+    std::vector<std::vector<Phoneme>>& phonemes) {
   phonemes.clear();
   phonemize_context* context = detail::cache().Get(config.voice);
   if (context == nullptr) {
